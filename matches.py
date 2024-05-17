@@ -20,6 +20,8 @@ class Matches:
         for group in self.groups:
             random.shuffle(group)
 
+    # Getting winner/loser info round by round requires the use of find function,
+    # which might get complicated. Keeping the lists in dictionary now but are useless
     def create_dictionary(self):
         self.match_dictionary = {
             'matches': [],
@@ -43,7 +45,7 @@ class Matches:
 
     def create_matches(self, groups):
         self.initialize(groups)
-        self.shuffle_teams()
+#        self.shuffle_teams()
         for group in self.groups:
             fixture = self.create_fixture(group)
             self.matches.append(fixture)

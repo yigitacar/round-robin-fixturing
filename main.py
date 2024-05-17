@@ -1,48 +1,67 @@
-import pandas as pd
 from participants import Participants
 from groups import Groups
 from matches import Matches
-from openpyxl import load_workbook
+from input_file import InputFile
 
+# TODO: Write readme
+# TODO: figure out the general user interactivity
 file_path = 'entries.xlsx'
+fl = InputFile(file_path)
 
-# Read the file as an object and read the entries
-xl = pd.ExcelFile(file_path)
-df = pd.read_excel(xl)
-
-# Load an existing workbook
-wb = load_workbook(file_path)
-
-def is_sheet_name_exist(wb, sheet_name):
-    for ws in wb.sheetnames:
-        if ws == sheet_name:
-            return True
-    return False
-
-num_sheets = len(xl.sheet_names)
-if num_sheets == 1:
-    num_groups = int(input("How many groups?"))
+if input("Is the file ready?") in ["Yes", "yes"]:
+    if fl.is_sheet_name_exist("Participants"):
+        prt = Participants(fl.entries)
+        fxt = Matches()
+        if prt.is_entry_num_valid():
+            num_groups = int(input("How many groups?"))
+            grp = Groups(num_groups, prt.list_participants)
+            if grp.is_group_num_valid():
+                if input("Do you want to randomize groups?") in ["Yes", "yes"]:
+                    if fl.is_sheet_name_exist('Group Stage'):
+                        ws1 = fl.wb['Group Stage']
+                        fl.wb.remove(ws1)
+                    ws1 = fl.wb.create_sheet(title='Group Stage')
+                    ws1 = grp.print_groups(ws1)
+                    if fl.is_sheet_name_exist('Matches'):
+                        ws2 = fl.wb['Matches']
+                        fl.wb.remove(ws2)
+                    ws2 = fl.wb.create_sheet(title='Matches')
+                    matches = fxt.create_matches(grp.groups)
+                    ws2 = fxt.print_matches(ws2)
+                else:
+                    print("here")
+                    if fl.is_sheet_name_exist('Group Stage'):
+                        ws1 = fl.wb['Group Stage']
+                        grp.read_groups(ws1)
+                        grp.read_winners(ws1)
+                        grp.print_points(ws1)
+                        if fl.is_sheet_name_exist('Matches'):
+                            ws2 = fl.wb['Matches']
+                            fl.wb.remove(ws2)
+                        ws2 = fl.wb.create_sheet(title='Matches')
+                        matches = fxt.create_matches(grp.groups)
+                        ws2 = fxt.print_matches(ws2)
+                    else:
+                        print("Please create group stage sheet.")
+            else:
+                print("Invalid number of groups, try again.")
+        else:
+            print("Invalid number of participants, try again.")
+    else:
+        print("Please create participants sheet.")
 else:
-    num_groups = 4
+    print("Try again")
 
-prt = Participants(df)
-grp = Groups(num_groups, prt.list_participants)
-fxt = Matches()
+fl.wb.save(file_path)
 
-# TODO: create a dictionary of sheet names and do the check within one line
 # TODO: adjust the alignment of the texts on cells
-if not is_sheet_name_exist(wb, 'Group Stage'):
-    ws1 = wb.create_sheet(title='Group Stage')
-    ws1 = grp.print_groups(ws1)
-
-# TODO: Point calculator using winner/loser information
-if not is_sheet_name_exist(wb, 'Matches'):
-    ws2 = wb.create_sheet(title='Matches')
-    matches = fxt.create_matches(grp.groups)
-    ws2 = fxt.print_matches(ws2)
+# TODO: save work sheet as internal variable for classes
 
 
-wb.save(file_path)
+
+
+
+
 
 
 

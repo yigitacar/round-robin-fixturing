@@ -1,10 +1,10 @@
 from openpyxl.styles import Font, PatternFill
 START_LETTER = 'A'
+POINT_COLUMN = 12
 class Groups:
     def __init__(self, num_groups, participants):
         self.num_groups = num_groups
         self.num_participants = len(participants)
-        # is group num valid
         self.group_size = self.num_participants // self.num_groups
         self.groups = []
         self.distribute_into_groups(participants)
@@ -58,3 +58,54 @@ class Groups:
 
         return work_sheet
 
+    def read_groups(self, work_sheet):
+        for i, group in enumerate(self.group_dictionary['groups']):
+            start_row = i * (self.group_size + 2) + 2
+            end_row = start_row + self.group_size - 1
+            element_counter = 0
+            for j in range(start_row, end_row + 1):
+                group['participants'][element_counter] = work_sheet.cell(row=j, column=1).value
+                element_counter = element_counter + 1
+            self.group_dictionary['groups'][i] = group
+    def read_winners(self, work_sheet):
+        for i, group in enumerate(self.group_dictionary['groups']):
+            group_row = i * (self.group_size + 2) + 1
+            start_row = i * (self.group_size + 2) + 2
+            end_row = start_row + self.group_size - 1
+            start_column = 3
+            current_column = start_column
+            end_column = self.group_size + 1
+            for j in range(start_row, end_row + 1):
+                for k in range(current_column, end_column + 1):
+                    competitor1 = work_sheet.cell(row=j, column=1).value
+                    competitor2 = work_sheet.cell(row=group_row, column=k).value
+                    competitor1_index = group['participants'].index(competitor1)
+                    competitor2_index = group['participants'].index(competitor2)
+                    result = work_sheet.cell(row=j, column=k).value
+                    if result == 'Draw':
+                        group['points'][competitor1_index] += 1
+                        group['points'][competitor2_index] += 1
+                    elif result == competitor1:
+                        group['points'][competitor1_index] += 2
+                    elif result == competitor2:
+                        group['points'][competitor2_index] += 2
+                current_column = current_column + 1
+            #print(group)
+    # TODO print titles Participants and Points
+    def print_points(self, work_sheet):
+        for i, group in enumerate(self.group_dictionary['groups']):
+            start_row = i * (self.group_size + 2) + 2
+            sorted_participants, sorted_points = self.sort_participants(group)
+            for j, participant in enumerate(sorted_participants):
+                work_sheet.cell(row=start_row+j, column=POINT_COLUMN-1).value = participant
+                work_sheet.cell(row=start_row+j, column=POINT_COLUMN).value = sorted_points[j]
+
+    def sort_participants(self, group):
+        part_list = group['participants']
+        point_list = group['points']
+        participants_points = list(zip(part_list, point_list))
+        sorted_participants_points = sorted(participants_points, key=lambda x: x[1], reverse=True)
+        sorted_participants, sorted_points = zip(*sorted_participants_points)
+        sorted_participants = list(sorted_participants)
+        sorted_points = list(sorted_points)
+        return sorted_participants, sorted_points

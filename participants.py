@@ -7,7 +7,6 @@ class Participants:
     def shuffle_participants(self):
         return self.participants.sample(frac=1).reset_index(drop=True)
     def convert_into_list(self):
-        # check if the title is Participants or not
         return self.shuffled_participants['Participants'].tolist()
     def is_entry_num_valid(self):
         return (self.num_participants & (self.num_participants - 1) == 0) and self.num_participants != 0
