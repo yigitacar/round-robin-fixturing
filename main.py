@@ -4,7 +4,11 @@ from matches import Matches
 from input_file import InputFile
 
 # TODO: Write readme
-# TODO: figure out the general user interactivity
+# TODO: adjust the alignment of the texts on cells
+# TODO: save work sheet as internal variable for classes
+# TODO: add gitignore for some files
+# TODO: create test files (excel)
+# TODO: check if you can generate .exe
 file_path = 'entries.xlsx'
 fl = InputFile(file_path)
 
@@ -54,8 +58,7 @@ else:
 
 fl.wb.save(file_path)
 
-# TODO: adjust the alignment of the texts on cells
-# TODO: save work sheet as internal variable for classes
+
 
 
 
